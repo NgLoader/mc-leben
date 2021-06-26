@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>de.ngloader.streamevent</groupId>
+		<artifactId>leben</artifactId>
+		<version>${revision}</version>
+	</parent>
+	<artifactId>leben-minecraft</artifactId>
+	<packaging>pom</packaging>
+	<modules>
+		<module>leben-minecraft-cityworld</module>
+		<module>leben-minecraft-farmworld</module>
+		<module>leben-minecraft-plotworld</module>
+		<module>leben-minecraft-test</module>
+		<module>leben-minecraft-build</module>
+	</modules>
+</project>
