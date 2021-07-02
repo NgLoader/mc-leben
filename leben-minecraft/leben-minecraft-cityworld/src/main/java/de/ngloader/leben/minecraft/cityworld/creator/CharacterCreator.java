@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
@@ -39,9 +38,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapCanvas;
-import org.bukkit.map.MapFont;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
@@ -49,14 +46,13 @@ import org.bukkit.map.MapView.Scale;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.plugin.PluginManager;
 
-import com.mojang.serialization.RecordBuilder.MapBuilder;
-
 import de.ngloader.leben.core.minecraft.player.LebenPlayer;
 import de.ngloader.leben.core.minecraft.util.ItemFactory;
 import de.ngloader.leben.core.synced.player.Character;
 import de.ngloader.leben.minecraft.cityworld.CityWorld;
 import de.ngloader.npcsystem.NPCPlugin;
 import de.ngloader.npcsystem.NPCRegistry;
+import de.ngloader.npcsystem.runner.NPCRunnerType;
 
 public class CharacterCreator implements Listener {
 
@@ -70,7 +66,7 @@ public class CharacterCreator implements Listener {
 	private static final ItemFactory ITEM_BACK = new ItemFactory(Material.OAK_DOOR).addAllFlag();
 	private static final ItemFactory ITEM_MAP = new ItemFactory(Material.FILLED_MAP).addAllFlag();
 
-	static final NPCRegistry NPC_REGISTRY = NPCPlugin.getInstance().getDefaultRegistry();
+	static final NPCRegistry NPC_REGISTRY = NPCPlugin.getInstance().createRegestry();
 
 	static {
 		STEPS.add(TypeStep.class);
@@ -81,10 +77,10 @@ public class CharacterCreator implements Listener {
 		addCancelledEvent(InventoryClickEvent.class, InventoryInteractEvent.class, "getWhoClicked");
 		addCancelledEvent(FoodLevelChangeEvent.class, EntityEvent.class, "getEntity");
 
-//		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.DISTANCE_CHECK);
-////		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.TABLIST);
-//		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.LOOK);
-//		NPC_REGISTRY.getRunnerManager().startRunner();
+		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.DISTANCE_CHECK);
+//		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.TABLIST);
+		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.LOOK);
+		NPC_REGISTRY.getRunnerManager().startRunner();
 	}
 
 	private static void addCancelledEvent(Class<? extends Event> eventClass, String getEntityMethod) {
