@@ -31,7 +31,6 @@ public class TypeStep extends Step implements Listener {
 		LebenPlayer player = this.creator.player;
 		NPC_MALE.show(player);
 		NPC_FEMALE.show(player);
-		player.sendMessage("SHOW");
 	}
 
 	@EventHandler
@@ -55,6 +54,5 @@ public class TypeStep extends Step implements Listener {
 		LebenPlayer player = this.creator.player;
 		NPC_MALE.hide(player);
 		NPC_FEMALE.hide(player);
-		player.sendMessage("HIDE");
 	}
 }
