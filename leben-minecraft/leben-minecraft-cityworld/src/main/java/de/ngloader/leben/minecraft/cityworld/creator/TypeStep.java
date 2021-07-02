@@ -43,8 +43,6 @@ public class TypeStep extends Step implements Listener {
 			} else if (npc.equals(NPC_FEMALE)) {
 				//this.character set female
 				this.creator.nextStep();
-			} else {
-				//Handle error
 			}
 		}
 	}
