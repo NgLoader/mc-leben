@@ -1,0 +1,10 @@
+name: Leben_Core
+author: NgLoader
+version: 1.0
+
+api-version: 1.17
+
+main: de.ngloader.leben.core.minecraft.MCCore
+
+depend: [NPCSystem]
+loadbefore: [NPCSystem]

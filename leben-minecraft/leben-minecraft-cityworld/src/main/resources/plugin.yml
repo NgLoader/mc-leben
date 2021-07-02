@@ -1,0 +1,13 @@
+name: Leben_CityWorld
+author: NgLoader
+version: 1.0
+
+api-version: 1.17
+
+main: de.ngloader.leben.minecraft.cityworld.CityWorld
+
+depend: [NPCSystem, Leben_Core]
+loadbefore: [NPCSystem, Leben_Core]
+
+commands:
+  create:
