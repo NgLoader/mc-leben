@@ -76,6 +76,10 @@ public class CharacterCreator implements Listener {
 		addCancelledEvent(PlayerDropItemEvent.class, PlayerEvent.class, "getPlayer");
 		addCancelledEvent(InventoryClickEvent.class, InventoryInteractEvent.class, "getWhoClicked");
 		addCancelledEvent(FoodLevelChangeEvent.class, EntityEvent.class, "getEntity");
+
+		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.DISTANCE_CHECK);
+		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.LOOK);
+		NPC_REGISTRY.getRunnerManager().startRunner();
 	}
 
 	private static void addCancelledEvent(Class<? extends Event> eventClass, String getEntityMethod) {
