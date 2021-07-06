@@ -49,12 +49,18 @@ public class ProxyCore extends Plugin {
 
 	@Override
 	public void onEnable() {
-		LebenCoreConfig config = ConfigService.getConfig(LebenCoreConfig.class);
-		this.redisManager = new RedisManager(config);
+		try {
+			LebenCoreConfig config = ConfigService.getConfig(LebenCoreConfig.class);
 
-		this.pluginMessageHandler = new PluginMessageHandler(this);
+			this.redisManager = new RedisManager(config);
 
-		this.playerManager = new PlayerManager(this);
+			this.pluginMessageHandler = new PluginMessageHandler(this);
+
+			this.playerManager = new PlayerManager(this);
+		} catch (Exception e) {
+			ProxyServer.getInstance().stop("ProxyCore: " + e.getMessage());
+			this.onFailed(e);
+		}
 	}
 
 	protected void destroy() {

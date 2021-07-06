@@ -1,6 +1,5 @@
 package de.ngloader.leben.core.synced.redis;
 
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.ngloader.leben.core.synced.LebenCoreConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -28,9 +29,17 @@ public class RedisManager {
 	private final JedisPool jedisPool;
 	private final ExecutorService executorService = Executors.newWorkStealingPool();
 
-	public RedisManager(LebenCoreConfig config) {
-//		this.jedisPool = new JedisPool(new JedisPoolConfig(), URI.create(config.redisUri));
-		this.jedisPool = null; //TODO CHANGE BACK NILS!
+	public RedisManager(LebenCoreConfig config) throws Exception {
+		LebenCoreConfig.RedisConfig redisConfig = config.redis;
+
+		this.jedisPool = new JedisPool(
+				new JedisPoolConfig(),
+				new HostAndPort(redisConfig.host, redisConfig.port),
+				DefaultJedisClientConfig.builder()
+					.ssl(true)
+					.sslSocketFactory(RedisSSLSocketFactory.createSocketFactory(redisConfig))
+					.password(redisConfig.password)
+					.build());
 	}
 
 	public CompletableFuture<String> get(RedisDB db, String key) {

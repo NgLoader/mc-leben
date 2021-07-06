@@ -16,6 +16,7 @@ import java.util.function.Function;
 import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -37,6 +38,7 @@ import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapPalette;
@@ -69,7 +71,10 @@ public class CharacterCreator implements Listener {
 	static final NPCRegistry NPC_REGISTRY = NPCPlugin.getInstance().createRegestry();
 
 	static {
-		STEPS.add(TypeStep.class);
+		STEPS.add(KingdomStep.class);
+		STEPS.add(GenderStep.class);
+		STEPS.add(ClassStep.class);
+		STEPS.add(NameStep.class);
 
 		addCancelledEvent(BlockBreakEvent.class, "getPlayer");
 		addCancelledEvent(BlockPlaceEvent.class, "getPlayer");
@@ -78,6 +83,7 @@ public class CharacterCreator implements Listener {
 		addCancelledEvent(FoodLevelChangeEvent.class, EntityEvent.class, "getEntity");
 
 		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.DISTANCE_CHECK);
+		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.TABLIST);
 		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.LOOK);
 		NPC_REGISTRY.getRunnerManager().startRunner();
 	}
@@ -111,6 +117,8 @@ public class CharacterCreator implements Listener {
 	final CityWorld plugin;
 	final LebenPlayer player;
 
+	final Location locationLobby;
+
 	private final Consumer<Character> finish;
 	private boolean finished = false;
 
@@ -123,6 +131,8 @@ public class CharacterCreator implements Listener {
 		this.plugin = plugin;
 		this.player = player;
 		this.finish = finish;
+
+		this.locationLobby = this.player.getLocation(); //TODO FIX THIS!
 
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		pluginManager.registerEvents(this, this.plugin);
@@ -169,6 +179,13 @@ public class CharacterCreator implements Listener {
 			if (entity != null && entity.getUniqueId().equals(this.player.getUniqueId())) {
 				((Cancellable) event).setCancelled(true);
 			}
+		}
+	}
+
+	@EventHandler(ignoreCancelled = false, priority = EventPriority.HIGH)
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		if (event.getPlayer().getUniqueId().equals(this.player.getUniqueId())) {
+			this.finish(null);
 		}
 	}
 
@@ -223,7 +240,7 @@ public class CharacterCreator implements Listener {
 	void nextStep() {
 		this.currentStep++;
 
-		if (this.currentStep > STEPS.size()) {
+		if (this.currentStep > STEPS.size() - 1) {
 			this.finish(this.character);
 			return;
 		}
@@ -252,6 +269,8 @@ public class CharacterCreator implements Listener {
 		this.finished = true;
 
 		try {
+			this.player.getInventory().clear();
+			this.player.teleport(this.locationLobby);
 			this.finish.accept(character);
 		} finally {
 			this.destroy();

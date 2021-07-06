@@ -56,7 +56,7 @@ public class MCCore extends JavaPlugin {
 		this.sentryLogger = new SentryLogger(serverType, serverName);
 	}
 
-	protected void initialize(LebenCoreConfig config) {
+	protected void initialize(LebenCoreConfig config) throws Exception {
 		this.redisManager = new RedisManager(config);
 		this.playerManager = new PlayerManager(this);
 

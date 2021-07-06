@@ -5,19 +5,28 @@ import de.ngloader.leben.core.synced.config.Config;
 @Config(path = "leben", name = "core")
 public class LebenCoreConfig {
 
-	public String sentryUrl;
+	public String sentryUrl = "SENTRY URL";
 
-	public String backendApiPath;
+	public RedisConfig redis = new RedisConfig();
 
-	public String redisUri;
+	public MasterConfig master = new MasterConfig();
 
-	public MasterConfig master;
+	public class RedisConfig {
+		public String host = "0.0.0.0";
+		public int port = 6379;
+
+		public String password = "password";
+
+		public String privateKey = "privateKey";
+		public String publicCrt = "publicKey";
+		public String pem = "pem";
+	}
 
 	public class MasterConfig {
 
-		public String address;
-		public int port;
+		public String address = "0.0.0.0";
+		public int port = 25000;
 
-		public String sslPath;
+		public String sslPath = "ssl";
 	}
 }

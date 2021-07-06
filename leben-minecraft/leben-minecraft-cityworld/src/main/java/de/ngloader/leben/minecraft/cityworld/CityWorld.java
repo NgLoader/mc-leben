@@ -55,7 +55,7 @@ public class CityWorld extends MCCore {
 	public void onDisable() {
 		try {
 			Bukkit.setWhitelist(true);
-			Bukkit.getOnlinePlayers().forEach(player -> player.kickPlayer("§cRestarting..."));
+//			Bukkit.getOnlinePlayers().forEach(player -> player.kickPlayer("§cRestarting..."));
 
 			this.destroy();
 

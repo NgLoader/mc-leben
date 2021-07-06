@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>de.ngloader.streamevent</groupId>
+		<groupId>de.ngloader.leben</groupId>
 		<artifactId>leben-minecraft</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -28,11 +28,34 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>*</include>
+				</includes>
+			</resource>
+		</resources>
+
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${plugin.maven-shade.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>net.md-5</groupId>
 				<artifactId>specialsource-maven-plugin</artifactId>
-				<version>1.2.2</version>
+				<version>${plugin.specialsource.version}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -46,7 +69,18 @@
 							<remappedDependencies>org.spigotmc:spigot:${minecraft.version}:jar:remapped-mojang</remappedDependencies>
 							<remappedArtifactAttached>true</remappedArtifactAttached>
 							<remappedClassifierName>remapped-obf</remappedClassifierName>
-							<outputDirectory>D:\Workspace\minecraft\Server\Spigot 1.17\plugins</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>remap</goal>
+						</goals>
+						<id>remap-spigot</id>
+						<configuration>
+							<inputFile>${project.build.directory}/${project.artifactId}-${project.version}-remapped-obf.jar</inputFile>
+							<srgIn>org.spigotmc:minecraft-server:${minecraft.version}:csrg:maps-spigot</srgIn>
+							<remappedDependencies>org.spigotmc:spigot:${minecraft.version}:jar:remapped-obf</remappedDependencies>
 						</configuration>
 					</execution>
 				</executions>
