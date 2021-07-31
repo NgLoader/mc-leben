@@ -17,9 +17,16 @@ public class CityWorld extends MCCore {
 
 	@Override
 	public void onLoad() {
-		Bukkit.setWhitelist(true);
 
-		this.preInitialize("https://41968b250dce406197d24b411afa6f03@sentry.zockercraft.net/2", "CityWorld");
+		try {
+			LebenCoreConfig config = ConfigService.getConfig(LebenCoreConfig.class);
+
+			Bukkit.setWhitelist(true);
+
+			this.preInitialize(config, "CityWorld", "CityWorld-01");
+		} catch (Exception e) {
+			this.onFailed(e);
+		}
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package de.ngloader.leben.core.synced.redis;
+package de.ngloader.leben.core.synced.util;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -7,51 +7,46 @@ import java.nio.file.Path;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import de.ngloader.leben.core.synced.LebenCoreConfig;
 import io.netty.util.CharsetUtil;
-import nl.altindag.ssl.SSLFactory;
-import nl.altindag.ssl.util.PemUtils;
 
-public class RedisSSLSocketFactory {
+public class SSLSocketFactoryUtil {
 
-	public static SSLSocketFactory createSocketFactory(LebenCoreConfig.RedisConfig config) throws Exception {
-//		KeyStore keyStore = createKeyStore(config);
-//
-//		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
-//		trustManagerFactory.init(keyStore);
-//		TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-//
-//		SSLContext sslContext = SSLContext.getInstance("TLS");
-//		sslContext.init(null, trustManagers, new SecureRandom());
-//		return sslContext.getSocketFactory();
+	public static SSLSocketFactory createSocketFactory(LebenCoreConfig.SSLConfig config) throws Exception {
+		KeyStore keyStore = createKeyStore(config);
 
-		var keyManager = PemUtils.loadIdentityMaterial(Path.of(config.publicCrt), Path.of(config.privateKey));
-		var trustManager = PemUtils.loadTrustMaterial(Path.of(config.pem));
-		SSLFactory sslFactory = SSLFactory.builder()
-				.withIdentityMaterial(keyManager)
-				.withTrustMaterial(trustManager)
-				.build();
+		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+		keyManagerFactory.init(keyStore, new char[0]);
 
-		return sslFactory.getSslContext().getSocketFactory();
+		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("X509");
+		trustManagerFactory.init(keyStore);
+
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+		sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
+		return sslContext.getSocketFactory();
 	}
 
-	public static KeyStore createKeyStore(LebenCoreConfig.RedisConfig config) throws Exception {
-		Certificate certificate = readCertifiacte(config.publicCrt);
+	public static KeyStore createKeyStore(LebenCoreConfig.SSLConfig config) throws Exception {
 		PrivateKey privateKey = readPrivateKey(config.privateKey);
-		Certificate authCertificate = readCertifiacte(config.pem);
+		Certificate certificate = readCertifiacte(config.publicCrt);
+		Certificate authCertificate = readCertifiacte(config.caCrt);
 
 		KeyStore keyStore = KeyStore.getInstance("JKS");
 		keyStore.load(null, null);
-		keyStore.setKeyEntry("client-key", privateKey, new char[0], new Certificate[] { certificate });
-		keyStore.setCertificateEntry("client-cert", certificate);
-		keyStore.setCertificateEntry("ca-cert", authCertificate);
+		keyStore.setKeyEntry("private", privateKey, new char[0], new Certificate[] { certificate });
+		keyStore.setCertificateEntry("public", certificate);
+		keyStore.setCertificateEntry("ca", authCertificate);
 		return keyStore;
 	}
 

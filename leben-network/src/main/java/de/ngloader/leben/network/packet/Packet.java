@@ -7,5 +7,7 @@ public interface Packet<T extends PacketHandler> {
 	public void read(ByteBuf buffer);
 	public void write(ByteBuf buffer);
 
-	public void handle(T handler);
+	public default void handle(T handler) {
+		throw new IllegalArgumentException("Method handle(T) is not supported");
+	}
 }

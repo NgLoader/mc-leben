@@ -5,12 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ForkJoinPool;
 
 import de.ngloader.leben.core.synced.LebenCoreConfig;
+import de.ngloader.leben.core.synced.util.SSLSocketFactoryUtil;
+import io.sentry.Sentry;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -27,7 +26,6 @@ public class RedisManager {
 	}
 
 	private final JedisPool jedisPool;
-	private final ExecutorService executorService = Executors.newWorkStealingPool();
 
 	public RedisManager(LebenCoreConfig config) throws Exception {
 		LebenCoreConfig.RedisConfig redisConfig = config.redis;
@@ -37,7 +35,7 @@ public class RedisManager {
 				new HostAndPort(redisConfig.host, redisConfig.port),
 				DefaultJedisClientConfig.builder()
 					.ssl(true)
-					.sslSocketFactory(RedisSSLSocketFactory.createSocketFactory(redisConfig))
+					.sslSocketFactory(SSLSocketFactoryUtil.createSocketFactory(redisConfig.ssl))
 					.password(redisConfig.password)
 					.build());
 	}
@@ -91,20 +89,21 @@ public class RedisManager {
 	}
 
 	public <T> CompletableFuture<T> handle(RedisDB db, Transformer<Jedis, T> function) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        this.executorService.execute(() -> {
-            try (Jedis jedis = this.jedisPool.getResource()) {
-                jedis.select(db.getId());
-                future.complete(function.apply(jedis));
-            } catch (Exception e) {
-            	Logger.getLogger(RedisManager.class.getSimpleName()).log(Level.SEVERE, e.getMessage(), e);
-            	future.completeExceptionally(e);
+		CompletableFuture<T> future = new CompletableFuture<>();
+		ForkJoinPool.commonPool().execute(() -> {
+			try (Jedis jedis = this.jedisPool.getResource()) {
+				jedis.select(db.getId());
+				future.complete(function.apply(jedis));
+			} catch (Exception e) {
+				e.printStackTrace();
+				Sentry.captureException(e);
+				future.completeExceptionally(e);
 			}
-        });
-        return future;
-    }
+		});
+		return future;
+	}
 
 	private interface Transformer<T, V> {
-	    V apply(T t) throws Exception;
+		V apply(T t) throws Exception;
 	}
 }

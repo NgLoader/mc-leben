@@ -50,10 +50,10 @@ public class MCCore extends JavaPlugin {
 
 	private PluginMessageHandler pluginMessageHandler;
 
-	protected void preInitialize(String serverType, String serverName) {
+	protected void preInitialize(LebenCoreConfig config, String serverType, String serverName) {
 		setServerName(serverName);
 
-		this.sentryLogger = new SentryLogger(serverType, serverName);
+		this.sentryLogger = new SentryLogger(config, serverType, serverName);
 	}
 
 	protected void initialize(LebenCoreConfig config) throws Exception {

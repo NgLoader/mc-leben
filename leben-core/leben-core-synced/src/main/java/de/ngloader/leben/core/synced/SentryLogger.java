@@ -5,9 +5,9 @@ import io.sentry.SentryLevel;
 
 public class SentryLogger {
 
-	public SentryLogger(String serverType, String serverName) {
+	public SentryLogger(LebenCoreConfig config, String serverType, String serverName) {
 		Sentry.init(options -> {
-			options.setDsn("https://41968b250dce406197d24b411afa6f03@sentry.zockercraft.net/2");
+			options.setDsn(config.sentryUrl);
 			options.setShutdownTimeout(5000);
 			options.setDiagnosticLevel(SentryLevel.ERROR);
 			options.setTag("ServerType", serverType);
