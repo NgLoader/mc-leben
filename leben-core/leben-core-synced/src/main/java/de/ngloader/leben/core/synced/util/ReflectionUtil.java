@@ -4,6 +4,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import io.sentry.Sentry;
+
 public class ReflectionUtil {
 
 	public static void setField(Object instance, String name, Object value) {
@@ -17,6 +19,7 @@ public class ReflectionUtil {
 			field.set(instance, value);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 		}
 	}
 
@@ -31,6 +34,7 @@ public class ReflectionUtil {
 			return field.get(obj);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 			return null;
 		}
 	}
@@ -40,6 +44,7 @@ public class ReflectionUtil {
 			return ReflectionUtil.getField(Class.forName(className), name);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 			return null;
 		}
 	}
@@ -51,6 +56,7 @@ public class ReflectionUtil {
 			return field;
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 			return null;
 		}
 	}
@@ -60,6 +66,7 @@ public class ReflectionUtil {
 			return ReflectionUtil.getMethod(Class.forName(className), name, parameterTypes);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 			return null;
 		}
 	}
@@ -71,6 +78,7 @@ public class ReflectionUtil {
 			return method;
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 			return null;
 		}
 	}
@@ -80,6 +88,7 @@ public class ReflectionUtil {
 			return clazz.getConstructor(parameterTypes);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Sentry.captureException(e);
 			return null;
 		}
 	}

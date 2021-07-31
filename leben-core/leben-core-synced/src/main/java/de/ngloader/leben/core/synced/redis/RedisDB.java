@@ -2,13 +2,13 @@ package de.ngloader.leben.core.synced.redis;
 
 public enum RedisDB {
 
-	PLAYER_INFO(5),
-	PLAYER_STATS(6),
-	PLAYER_DATA(7),
+	PLAYER_DATA(0),
+	PLAYER_INFO(1),
+	PLAYER_STATS(2),
 
-	CITY_INFO(10),
-	CITY_STATS(11),
-	CITY_PLAYER(12);
+	CITY_PLAYER(5),
+	CITY_INFO(6),
+	CITY_STATS(7);
 
 	private final int dbId;
 

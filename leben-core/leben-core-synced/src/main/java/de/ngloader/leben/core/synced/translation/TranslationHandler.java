@@ -32,7 +32,7 @@ public class TranslationHandler {
 		Set<Locale> availableLocales = Set.of(Locale.getAvailableLocales());
 
 		try {
-			Files.walkFileTree(Path.of(TranslationHandler.class.getClassLoader().getResource("trans/").toURI()), new SimpleFileVisitor<Path>() {
+			Files.walkFileTree(Path.of(TranslationHandler.class.getClassLoader().getResource("lang/").toURI()), new SimpleFileVisitor<Path>() {
 				
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

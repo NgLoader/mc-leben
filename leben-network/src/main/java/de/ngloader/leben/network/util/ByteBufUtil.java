@@ -1,9 +1,16 @@
 package de.ngloader.leben.network.util;
 
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import io.netty.buffer.ByteBuf;
 
@@ -40,6 +47,52 @@ public class ByteBufUtil {
 	public static void writeByteArray(ByteBuf buffer, byte[] array) {
 		ByteBufUtil.writeVarInt(buffer, array.length);
 		buffer.writeBytes(array);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T[] readArray(ByteBuf buffer, Class<T> clazz, Function<ByteBuf, T> convert) {
+		T[] array = (T[]) Array.newInstance(clazz, buffer.readInt());
+		for (int i = 0; i < array.length; i++) {
+			array[i] = convert.apply(buffer);
+		}
+		return array;
+	}
+
+	public static <T> void writeArray(ByteBuf buffer, T[] array, BiConsumer<ByteBuf, T> convert) {
+		buffer.writeInt(array.length);
+		for (T entry : array) {
+			convert.accept(buffer, entry);
+		}
+	}
+
+	public static <T, R> Set<T> readSet(ByteBuf buffer, Function<ByteBuf, T> convert) {
+		Set<T> list = new HashSet<>();
+		for (int i = 0; i < buffer.readInt(); i++) {
+			list.add(convert.apply(buffer));
+		}
+		return list;
+	}
+
+	public static <T> void writeSet(ByteBuf buffer, Set<T> list, BiConsumer<ByteBuf, T> convert) {
+		buffer.writeInt(list.size());
+		for (T entry : list) {
+			 convert.accept(buffer, entry);
+		}
+	}
+
+	public static <T, R> List<T> readList(ByteBuf buffer, Function<ByteBuf, T> convert) {
+		List<T> list = new ArrayList<>();
+		for (int i = 0; i < buffer.readInt(); i++) {
+			list.add(convert.apply(buffer));
+		}
+		return list;
+	}
+
+	public static <T> void writeList(ByteBuf buffer, List<T> list, BiConsumer<ByteBuf, T> convert) {
+		buffer.writeInt(list.size());
+		for (T entry : list) {
+			 convert.accept(buffer, entry);
+		}
 	}
 
 	public static String readString(ByteBuf buffer) {

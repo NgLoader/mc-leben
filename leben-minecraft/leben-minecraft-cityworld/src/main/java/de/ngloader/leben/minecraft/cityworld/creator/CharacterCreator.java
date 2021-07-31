@@ -3,28 +3,18 @@ package de.ngloader.leben.minecraft.cityworld.creator;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -46,11 +36,11 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.map.MapView.Scale;
 import org.bukkit.map.MinecraftFont;
-import org.bukkit.plugin.PluginManager;
 
 import de.ngloader.leben.core.minecraft.player.LebenPlayer;
+import de.ngloader.leben.core.minecraft.util.EventUtil;
 import de.ngloader.leben.core.minecraft.util.ItemFactory;
-import de.ngloader.leben.core.synced.player.Character;
+import de.ngloader.leben.core.synced.core.player.Character;
 import de.ngloader.leben.minecraft.cityworld.CityWorld;
 import de.ngloader.npcsystem.NPCPlugin;
 import de.ngloader.npcsystem.NPCRegistry;
@@ -60,9 +50,7 @@ public class CharacterCreator implements Listener {
 
 	private static final List<Class<? extends Step>> STEPS = new LinkedList<>();
 
-	private static final Set<Class<? extends Event>> EVENT_CANCELLED = Collections
-			.newSetFromMap(new ConcurrentHashMap<>());
-	private static final Map<Class<? extends Event>, Function<Event, Entity>> EVENT_GET_ENTITY = new ConcurrentHashMap<>();
+	private static final EventUtil EVENT_UTIL = new EventUtil();
 
 	private static final ItemFactory ITEM_CLOSE = new ItemFactory(Material.BARRIER).addAllFlag();
 	private static final ItemFactory ITEM_BACK = new ItemFactory(Material.OAK_DOOR).addAllFlag();
@@ -76,42 +64,16 @@ public class CharacterCreator implements Listener {
 		STEPS.add(ClassStep.class);
 		STEPS.add(NameStep.class);
 
-		addCancelledEvent(BlockBreakEvent.class, "getPlayer");
-		addCancelledEvent(BlockPlaceEvent.class, "getPlayer");
-		addCancelledEvent(PlayerDropItemEvent.class, PlayerEvent.class, "getPlayer");
-		addCancelledEvent(InventoryClickEvent.class, InventoryInteractEvent.class, "getWhoClicked");
-		addCancelledEvent(FoodLevelChangeEvent.class, EntityEvent.class, "getEntity");
+		EVENT_UTIL.addCancelledEvent(BlockBreakEvent.class, "getPlayer");
+		EVENT_UTIL.addCancelledEvent(BlockPlaceEvent.class, "getPlayer");
+		EVENT_UTIL.addCancelledEvent(PlayerDropItemEvent.class, PlayerEvent.class, "getPlayer");
+		EVENT_UTIL.addCancelledEvent(InventoryClickEvent.class, InventoryInteractEvent.class, "getWhoClicked");
+		EVENT_UTIL.addCancelledEvent(FoodLevelChangeEvent.class, EntityEvent.class, "getEntity");
 
 		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.DISTANCE_CHECK);
 		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.TABLIST);
 		NPC_REGISTRY.getRunnerManager().addRunner(NPCRunnerType.LOOK);
 		NPC_REGISTRY.getRunnerManager().startRunner();
-	}
-
-	private static void addCancelledEvent(Class<? extends Event> eventClass, String getEntityMethod) {
-		addCancelledEvent(eventClass, eventClass, getEntityMethod);
-	}
-
-	private static void addCancelledEvent(Class<? extends Event> eventClass, Class<? extends Event> getEntityClass,
-			String getEntityMethod) {
-		if (!Cancellable.class.isAssignableFrom(eventClass)) {
-			return;
-		}
-
-		try {
-			Method method = getEntityClass.getDeclaredMethod(getEntityMethod);
-			EVENT_CANCELLED.add(eventClass);
-			EVENT_GET_ENTITY.put(eventClass, (event) -> {
-				try {
-					return (Entity) method.invoke(event);
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					e.printStackTrace();
-				}
-				return null;
-			});
-		} catch (NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
-		}
 	}
 
 	final CityWorld plugin;
@@ -134,12 +96,12 @@ public class CharacterCreator implements Listener {
 
 		this.locationLobby = this.player.getLocation(); //TODO FIX THIS!
 
-		PluginManager pluginManager = Bukkit.getPluginManager();
-		pluginManager.registerEvents(this, this.plugin);
-
-		for (Class<? extends Event> event : EVENT_CANCELLED) {
-			pluginManager.registerEvent(event, this, EventPriority.NORMAL, this::onDisableEvent, this.plugin, true);
+		if (EVENT_UTIL.getPlugin() == null) {
+			EVENT_UTIL.setPlugin(this.plugin);
 		}
+
+		EVENT_UTIL.register(this);
+		EVENT_UTIL.addEntity(this.player);
 
 		this.nextStep();
 
@@ -170,16 +132,6 @@ public class CharacterCreator implements Listener {
 		inventory.setItem(4, ITEM_MAP.clone().setDisplayName("§aTranslate this NILS! (Info)").setMap(view).build());
 		inventory.setItem(7, ITEM_BACK.clone().setDisplayName("§aTranslate this NILS! (Back)").build());
 		inventory.setItem(8, ITEM_CLOSE.clone().setDisplayName("§aTranslate this NILS! (Close)").build());
-	}
-
-	public void onDisableEvent(Listener listener, Event event) {
-		Function<Event, Entity> getEntity = EVENT_GET_ENTITY.get(event.getClass());
-		if (getEntity != null) {
-			Entity entity = getEntity.apply(event);
-			if (entity != null && entity.getUniqueId().equals(this.player.getUniqueId())) {
-				((Cancellable) event).setCancelled(true);
-			}
-		}
 	}
 
 	@EventHandler(ignoreCancelled = false, priority = EventPriority.HIGH)
@@ -278,7 +230,8 @@ public class CharacterCreator implements Listener {
 	}
 
 	public void destroy() {
-		HandlerList.unregisterAll(this);
+		EVENT_UTIL.unregister(this);
+		EVENT_UTIL.removeEntity(this.player);
 
 		if (this.step != null) {
 			this.step.destroy();

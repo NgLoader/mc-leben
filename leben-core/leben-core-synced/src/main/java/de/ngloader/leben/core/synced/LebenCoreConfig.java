@@ -8,7 +8,7 @@ public class LebenCoreConfig {
 	public String sentryUrl = "SENTRY URL";
 
 	public RedisConfig redis = new RedisConfig();
-
+	public MongoDBConfig mongoDB = new MongoDBConfig();
 	public MasterConfig master = new MasterConfig();
 
 	public class RedisConfig {
@@ -17,16 +17,29 @@ public class LebenCoreConfig {
 
 		public String password = "password";
 
-		public String privateKey = "privateKey";
-		public String publicCrt = "publicKey";
-		public String pem = "pem";
+		public SSLConfig ssl =  new SSLConfig();
+	}
+
+	public class MongoDBConfig {
+		public String host;
+		public String port;
+
+		public String password;
+		public String database;
+
+		public SSLConfig ssl =  new SSLConfig();
 	}
 
 	public class MasterConfig {
-
 		public String address = "0.0.0.0";
 		public int port = 25000;
 
 		public String sslPath = "ssl";
+	}
+
+	public class SSLConfig {
+		public String privateKey = "privateKey";
+		public String publicCrt = "publicKey";
+		public String caCrt = "caCrt";
 	}
 }

@@ -42,9 +42,16 @@ public class ProxyCore extends Plugin {
 
 	@Override
 	public void onLoad() {
-		setServerName("Leben-Proxy");
 
-		this.sentryLogger = new SentryLogger("Proxy", "Proxy-01");
+		try {
+			setServerName("Leben-Proxy");
+
+			LebenCoreConfig config = ConfigService.getConfig(LebenCoreConfig.class);
+			this.sentryLogger = new SentryLogger(config, "Proxy", "Proxy-01");
+		} catch (Exception e) {
+			ProxyServer.getInstance().stop("ProxyCore: " + e.getMessage());
+			this.onFailed(e);
+		}
 	}
 
 	@Override
